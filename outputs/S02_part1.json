@@ -1,0 +1,51 @@
+{
+  "scenario": "S02",
+  "command": "python run_part1.py",
+  "status_profile": "normal (not used in Part 1)",
+  "user_id": "demo-user-a",
+  "thread_id": "s02",
+  "predicted_route": [
+    "START",
+    "read_request",
+    "password_help",
+    "END"
+  ],
+  "prediction_correct": true,
+  "data_source": "data/helpdesk.json (reference file)",
+  "variant": "original",
+  "message": "I forgot my PASSWORD.",
+  "route": [
+    "START",
+    "read_request",
+    "password_help",
+    "END"
+  ],
+  "steps": [
+    {
+      "node": "read_request",
+      "update": {
+        "category": "password"
+      },
+      "state_after": {
+        "message": "I forgot my PASSWORD.",
+        "category": "password"
+      }
+    },
+    {
+      "node": "password_help",
+      "update": {
+        "reply": "[GUIDE-PASSWORD] Recover access to the practice account\n1. Open the practice sign-in screen and choose Forgot password.\n2. Follow the recovery instructions shown by the practice application.\n3. If recovery is unavailable, prepare a ticket describing the error.\n4. Never include a password or recovery code in a ticket."
+      },
+      "state_after": {
+        "message": "I forgot my PASSWORD.",
+        "category": "password",
+        "reply": "[GUIDE-PASSWORD] Recover access to the practice account\n1. Open the practice sign-in screen and choose Forgot password.\n2. Follow the recovery instructions shown by the practice application.\n3. If recovery is unavailable, prepare a ticket describing the error.\n4. Never include a password or recovery code in a ticket."
+      }
+    }
+  ],
+  "final_state": {
+    "message": "I forgot my PASSWORD.",
+    "category": "password",
+    "reply": "[GUIDE-PASSWORD] Recover access to the practice account\n1. Open the practice sign-in screen and choose Forgot password.\n2. Follow the recovery instructions shown by the practice application.\n3. If recovery is unavailable, prepare a ticket describing the error.\n4. Never include a password or recovery code in a ticket."
+  }
+}

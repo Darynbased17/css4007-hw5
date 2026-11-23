@@ -1,0 +1,51 @@
+{
+  "scenario": "S01",
+  "command": "python run_part1.py",
+  "status_profile": "normal (not used in Part 1)",
+  "user_id": "demo-user-a",
+  "thread_id": "s01",
+  "predicted_route": [
+    "START",
+    "read_request",
+    "wifi_help",
+    "END"
+  ],
+  "prediction_correct": true,
+  "data_source": "data/helpdesk.json (reference file)",
+  "variant": "original",
+  "message": "I cannot connect to Wi-Fi.",
+  "route": [
+    "START",
+    "read_request",
+    "wifi_help",
+    "END"
+  ],
+  "steps": [
+    {
+      "node": "read_request",
+      "update": {
+        "category": "wifi"
+      },
+      "state_after": {
+        "message": "I cannot connect to Wi-Fi.",
+        "category": "wifi"
+      }
+    },
+    {
+      "node": "wifi_help",
+      "update": {
+        "reply": "[GUIDE-WIFI] Connect to the practice campus network\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket."
+      },
+      "state_after": {
+        "message": "I cannot connect to Wi-Fi.",
+        "category": "wifi",
+        "reply": "[GUIDE-WIFI] Connect to the practice campus network\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket."
+      }
+    }
+  ],
+  "final_state": {
+    "message": "I cannot connect to Wi-Fi.",
+    "category": "wifi",
+    "reply": "[GUIDE-WIFI] Connect to the practice campus network\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket."
+  }
+}

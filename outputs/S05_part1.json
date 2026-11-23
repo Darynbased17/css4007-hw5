@@ -1,0 +1,51 @@
+{
+  "scenario": "S05",
+  "command": "python run_part1.py",
+  "status_profile": "normal (not used in Part 1)",
+  "user_id": "demo-user-a",
+  "thread_id": "s05",
+  "predicted_route": [
+    "START",
+    "read_request",
+    "clarify_problem",
+    "END"
+  ],
+  "prediction_correct": true,
+  "data_source": "data/helpdesk.json (reference file)",
+  "variant": "with_clarification",
+  "message": "My Wi-Fi password does not work.",
+  "route": [
+    "START",
+    "read_request",
+    "clarify_problem",
+    "END"
+  ],
+  "steps": [
+    {
+      "node": "read_request",
+      "update": {
+        "category": "both"
+      },
+      "state_after": {
+        "message": "My Wi-Fi password does not work.",
+        "category": "both"
+      }
+    },
+    {
+      "node": "clarify_problem",
+      "update": {
+        "reply": "Your message mentions both Wi-Fi and a password. Is the problem connecting to Wi-Fi, or recovering your account password?"
+      },
+      "state_after": {
+        "message": "My Wi-Fi password does not work.",
+        "category": "both",
+        "reply": "Your message mentions both Wi-Fi and a password. Is the problem connecting to Wi-Fi, or recovering your account password?"
+      }
+    }
+  ],
+  "final_state": {
+    "message": "My Wi-Fi password does not work.",
+    "category": "both",
+    "reply": "Your message mentions both Wi-Fi and a password. Is the problem connecting to Wi-Fi, or recovering your account password?"
+  }
+}
