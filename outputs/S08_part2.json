@@ -1,0 +1,60 @@
+{
+  "scenario": "S08",
+  "title": "Status source unavailable",
+  "command": "python run_part2.py S08",
+  "provider": "OpenRouter (OpenAI-compatible API)",
+  "model": "openai/gpt-4o-mini",
+  "status_profile": "status_unavailable",
+  "user_id": "demo-user-a",
+  "thread_id": "s08",
+  "loop_limit": 5,
+  "data_sources": "data/helpdesk.json (find_instructions), data/service_status.json (check_service_status), conversation state (earlier messages in this thread)",
+  "turns": [
+    {
+      "user_message": "Check whether Wi-Fi is down. If it is operating, prepare a ticket. I already enabled Wi-Fi and reconnected, with no success.",
+      "nodes_visited": [
+        "agent",
+        "tools",
+        "agent"
+      ],
+      "steps": [
+        {
+          "node": "agent",
+          "model_tool_requests": [
+            {
+              "tool": "check_service_status",
+              "args": {
+                "service": "wifi"
+              }
+            }
+          ]
+        },
+        {
+          "node": "tools",
+          "tool_results": [
+            {
+              "tool": "check_service_status",
+              "result": {
+                "service": "wifi",
+                "status": "unknown",
+                "message": "The demo Wi-Fi status source is unavailable.",
+                "status_profile": "status_unavailable"
+              }
+            }
+          ],
+          "state_change": {
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "model_answer": "I couldn't check the Wi-Fi status; it is unknown if it's operating or down. Would you still like me to prepare a ticket draft for your issue?"
+        }
+      ],
+      "final_reply": "I couldn't check the Wi-Fi status; it is unknown if it's operating or down. Would you still like me to prepare a ticket draft for your issue?",
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "messages_in_thread": 4
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+{
+  "scenario": "S09",
+  "title": "Missing ticket details",
+  "command": "python run_part2.py S09",
+  "provider": "OpenRouter (OpenAI-compatible API)",
+  "model": "openai/gpt-4o-mini",
+  "status_profile": "normal",
+  "user_id": "demo-user-a",
+  "thread_id": "s09",
+  "loop_limit": 5,
+  "data_sources": "data/helpdesk.json (find_instructions), data/service_status.json (check_service_status), conversation state (earlier messages in this thread)",
+  "turns": [
+    {
+      "user_message": "Prepare a support ticket.",
+      "nodes_visited": [
+        "agent"
+      ],
+      "steps": [
+        {
+          "node": "agent",
+          "model_answer": "Could you please provide details about the problem you're experiencing and any steps you've already tried?"
+        }
+      ],
+      "final_reply": "Could you please provide details about the problem you're experiencing and any steps you've already tried?",
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "messages_in_thread": 2
+    },
+    {
+      "user_message": "The issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails.",
+      "nodes_visited": [
+        "agent",
+        "tools",
+        "agent",
+        "tools",
+        "agent"
+      ],
+      "steps": [
+        {
+          "node": "agent",
+          "model_tool_requests": [
+            {
+              "tool": "check_service_status",
+              "args": {
+                "service": "wifi"
+              }
+            }
+          ]
+        },
+        {
+          "node": "tools",
+          "tool_results": [
+            {
+              "tool": "check_service_status",
+              "result": {
+                "service": "wifi",
+                "status": "operational",
+                "message": "The demo Wi-Fi service has no reported outage.",
+                "status_profile": "normal"
+              }
+            }
+          ],
+          "state_change": {
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "model_tool_requests": [
+            {
+              "tool": "prepare_ticket",
+              "args": {
+                "category": "wifi",
+                "summary": "Wi-Fi is failing to connect after enabling it.",
+                "steps_tried": [
+                  "Enabled Wi-Fi",
+                  "Tried reconnecting"
+                ],
+                "service_status": "operational"
+              }
+            }
+          ]
+        },
+        {
+          "node": "tools",
+          "tool_results": [
+            {
+              "tool": "prepare_ticket",
+              "result": {
+                "ticket_file": "outputs/tickets/DRAFT-20261123-235835-2c4c.json",
+                "ticket": {
+                  "ticket_id": "DRAFT-20261123-235835-2c4c",
+                  "status": "draft",
+                  "user_id": "demo-user-a",
+                  "thread_id": "s09",
+                  "category": "wifi",
+                  "summary": "Wi-Fi is failing to connect after enabling it.",
+                  "steps_tried": [
+                    "Enabled Wi-Fi",
+                    "Tried reconnecting"
+                  ],
+                  "service_status": "operational",
+                  "status_profile": "normal",
+                  "reference_ids": [
+                    "GUIDE-WIFI"
+                  ]
+                },
+                "note": "Local draft only. Nothing was sent."
+              }
+            }
+          ],
+          "state_change": {
+            "tool_rounds": 2
+          }
+        },
+        {
+          "node": "agent",
+          "model_answer": "I have prepared a support ticket for your Wi-Fi issue. Here are the details:\n\n- **Problem:** Wi-Fi is failing to connect after enabling it.\n- **Steps Tried:** Enabled Wi-Fi, Tried reconnecting.\n\nThe ticket file name is: `DRAFT-20261123-235835-2c4c.json`.\n\nPlease let me know if you need further assistance!"
+        }
+      ],
+      "final_reply": "I have prepared a support ticket for your Wi-Fi issue. Here are the details:\n\n- **Problem:** Wi-Fi is failing to connect after enabling it.\n- **Steps Tried:** Enabled Wi-Fi, Tried reconnecting.\n\nThe ticket file name is: `DRAFT-20261123-235835-2c4c.json`.\n\nPlease let me know if you need further assistance!",
+      "ticket_files": [
+        "outputs/tickets/DRAFT-20261123-235835-2c4c.json"
+      ],
+      "loop_limit_reached": false,
+      "messages_in_thread": 8
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "scenario": "S14",
+  "title": "Password recovery outage",
+  "command": "python run_part2.py S14",
+  "provider": "OpenRouter (OpenAI-compatible API)",
+  "model": "openai/gpt-4o-mini",
+  "status_profile": "recovery_outage",
+  "user_id": "demo-user-a",
+  "thread_id": "s14",
+  "loop_limit": 5,
+  "data_sources": "data/helpdesk.json (find_instructions), data/service_status.json (check_service_status), conversation state (earlier messages in this thread)",
+  "turns": [
+    {
+      "user_message": "My password recovery page is unavailable. Check the service status. Is there a known problem?",
+      "nodes_visited": [
+        "agent",
+        "tools",
+        "agent"
+      ],
+      "steps": [
+        {
+          "node": "agent",
+          "model_tool_requests": [
+            {
+              "tool": "check_service_status",
+              "args": {
+                "service": "account_recovery"
+              }
+            }
+          ]
+        },
+        {
+          "node": "tools",
+          "tool_results": [
+            {
+              "tool": "check_service_status",
+              "result": {
+                "service": "account_recovery",
+                "status": "outage",
+                "message": "The demo account-recovery service is unavailable. The fixture gives no repair time.",
+                "status_profile": "recovery_outage"
+              }
+            }
+          ],
+          "state_change": {
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "model_answer": "The password recovery service is currently down, and there is no known repair time. Unfortunately, I cannot prepare a ticket for this issue. If you need further assistance, please let me know!"
+        }
+      ],
+      "final_reply": "The password recovery service is currently down, and there is no known repair time. Unfortunately, I cannot prepare a ticket for this issue. If you need further assistance, please let me know!",
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "messages_in_thread": 4
+    }
+  ]
+}
