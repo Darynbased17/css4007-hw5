@@ -1,0 +1,22 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	agent(agent)
+	tools(tools)
+	stop_at_limit(stop_at_limit)
+	load_user_memory(load_user_memory)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> load_user_memory;
+	agent -. &nbsp;end&nbsp; .-> __end__;
+	agent -.-> stop_at_limit;
+	agent -.-> tools;
+	load_user_memory --> agent;
+	tools --> agent;
+	stop_at_limit --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

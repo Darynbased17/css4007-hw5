@@ -1,10 +1,3 @@
-"""Part 1: a helpdesk graph with NO language model.
-
-Two versions of the graph:
-  - "original":            read_request -> wifi_help / password_help / other_help
-  - "with_clarification":  same, plus clarify_problem when both topics appear
-"""
-
 import json
 from pathlib import Path
 from typing import TypedDict
@@ -15,36 +8,41 @@ DATA_DIR = Path(__file__).parent / "data"
 HELPDESK = json.loads((DATA_DIR / "helpdesk.json").read_text(encoding="utf-8"))
 
 
-#1. The state: what the graph carries between nodes 
+# 1. State: the data passed between nodes
 class HelpdeskState(TypedDict, total=False):
-    message: str
-    category: str
-    reply: str
+    message: str   # the user's original message, never changed
+    category: str  # set by read_request: wifi, password, both or other
+    reply: str     # set by one of the help nodes
 
-#2. Helper functions
+
+# 2. Helper functions
+
+# True if the text contains any alias of the topic, case-insensitive
 def mentions(text: str, topic: str) -> bool:
-    """True if the text contains any alias of the topic."""
     text = text.lower()
     return any(alias in text for alias in HELPDESK["topic_aliases"][topic])
 
 
+# Formats the instructions of a topic as a numbered list
 def format_instructions(topic: str) -> str:
     guide = HELPDESK["instructions"][topic]
     steps = "\n".join(f"{i}. {step}" for i, step in enumerate(guide["steps"], 1))
     return f"[{guide['instruction_id']}] {guide['title']}\n{steps}"
 
 
-#3. Nodes: each reads the state and returns ONLY what it changes
+# 3. Nodes: each node reads the state and returns only the fields it changes
+
+# Builds read_request; with detect_both=True it also detects messages with both topics
 def make_read_request(detect_both: bool):
-    """Build read_request. The changed graph also detects 'both topics'."""
+
     def read_request(state: HelpdeskState) -> dict:
         msg = state["message"]
         wifi, password = mentions(msg, "wifi"), mentions(msg, "password")
         if detect_both and wifi and password:
             category = "both"
-        elif wifi:
+        elif wifi:                      # rule 1: Wi-Fi is checked first
             category = "wifi"
-        elif password:
+        elif password:                  # rule 2: only if there is no Wi-Fi keyword
             category = "password"
         else:
             category = "other"
@@ -71,7 +69,7 @@ def clarify_problem(state: HelpdeskState) -> dict:
                      "Is the problem connecting to Wi-Fi, or recovering your account password?"}
 
 
-#4. The conditional edge: chooses the NEXT node, changes nothing
+# 4. Conditional edge: chooses the next node and does not change the state
 def choose_next_node(state: HelpdeskState) -> str:
     return {
         "wifi": "wifi_help",
@@ -81,7 +79,7 @@ def choose_next_node(state: HelpdeskState) -> str:
     }[state["category"]]
 
 
-#5. Build and compile the graph
+# 5. Build and compile the graph
 def build_graph(variant: str = "original"):
     with_clarification = variant == "with_clarification"
     builder = StateGraph(HelpdeskState)
@@ -104,16 +102,15 @@ def build_graph(variant: str = "original"):
     return builder.compile()
 
 
-#6. Run once and record the trace 
+# 6. Run the graph once and record each node with the full state after it
 def run_with_trace(message: str, variant: str = "original") -> dict:
-    """Run the graph and record each node with the full state after it."""
     graph = build_graph(variant)
     state = {"message": message}
     steps = []
     # stream_mode="updates" yields {node_name: update} after every node
     for chunk in graph.stream({"message": message}, stream_mode="updates"):
         for node_name, update in chunk.items():
-            state = {**state, **update}   # merge, exactly like LangGraph does
+            state = {**state, **update}   # merge the update into the state, as LangGraph does
             steps.append({"node": node_name, "update": update, "state_after": dict(state)})
     return {
         "variant": variant,
@@ -124,6 +121,7 @@ def run_with_trace(message: str, variant: str = "original") -> dict:
     }
 
 
+# Manual run: python part1_graph.py "message" [--clarify]
 if __name__ == "__main__":
     import sys
     variant = "with_clarification" if "--clarify" in sys.argv else "original"

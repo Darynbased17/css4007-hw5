@@ -1,7 +1,5 @@
-"""Run the Part 1 scenarios (S01-S05) and save one log per scenario in outputs/.
-
-Usage:  python run_part1.py
-"""
+# Runs the Part 1 scenarios (S01-S05) and saves one log per scenario in outputs/
+# Usage: python run_part1.py
 
 import json
 from pathlib import Path
@@ -11,7 +9,7 @@ from part1_graph import build_graph, run_with_trace
 OUT = Path(__file__).parent / "outputs"
 OUT.mkdir(exist_ok=True)
 
-# Predictions written BEFORE running (copied into SUBMISSION.md)
+# Predictions written before running, copied into SUBMISSION.md
 PREDICTIONS = {
     "S01": ["START", "read_request", "wifi_help", "END"],
     "S02": ["START", "read_request", "password_help", "END"],
@@ -20,6 +18,7 @@ PREDICTIONS = {
     "S05": ["START", "read_request", "clarify_problem", "END"],
 }
 
+# Scenario id, message, graph variant
 SCENARIOS = [
     ("S01", "I cannot connect to Wi-Fi.", "original"),
     ("S02", "I forgot my PASSWORD.", "original"),

@@ -204,11 +204,60 @@ python chat.py --user demo-user-a --thread restart-a --message "Which problem an
 
 ## Part 4 — Running and checking my work
 
-TODO: point to the README setup steps, package versions, memory-reset instructions, tests and GitHub Actions workflow. Explain which mistake each test catches and which runs use a fake model.
+- **Setup and run commands:** [README.md](README.md) gives the exact installation steps for Windows and macOS/Linux, the `.env` configuration for OpenRouter, every run command and the interactive `chat.py` options. The original brief was moved to [ASSIGNMENT.md](ASSIGNMENT.md).
+- **Python and package versions:** Python 3.13 (tested with 3.13.18). [requirements.txt](requirements.txt) pins `langgraph==1.2.24`, `langgraph-checkpoint==4.3.2`, `langgraph-checkpoint-sqlite==3.1.3`, `langchain-core==1.8.4`, `langchain-openai==1.8.5`, `python-dotenv==1.2.3`, `pytest==9.1.1`.
+- **Memory location and reset:** conversations in `local-storage/conversations.sqlite`, preferences in `local-storage/user_memory.json` (folder set by `HELPDESK_STORAGE_DIR`, ignored by git). `python chat.py --reset` deletes both.
+- **Continuous integration:** [.github/workflows/tests.yml](.github/workflows/tests.yml) installs `requirements.txt` on Python 3.13 and runs `python -m pytest -v` on every push and pull request. No secret is used.
+
+### Tests and what each one would catch
+
+Command: `python -m pytest -v` (24 tests). `tests/conftest.py` sets `MODEL_NAME=fake` and gives every test a separate temporary storage and ticket folder, so tests never touch real memory and never call a paid model.
+
+| Test | What would break if it failed |
+| --- | --- |
+| `test_original_graph_routes` (4 cases) | A keyword rule, the case-insensitive comparison, or the conditional edge mapping |
+| `test_both_topics_original_graph_prefers_wifi` | The Part 1 rule order (S04 behaviour) changed by accident |
+| `test_both_topics_changed_graph_clarifies` | `clarify_problem` is missing or not connected (S05) |
+| `test_reply_comes_from_reference_file_and_message_is_kept` | Help nodes stop using `helpdesk.json`, or a node overwrites `message` |
+| `test_find_instructions_known_and_unknown_topic` | Topic aliases or the data format of `helpdesk.json` |
+| `test_check_service_status_uses_selected_profile` (5 cases) | The tool ignores the selected snapshot or the password → `account_recovery` mapping |
+| `test_prepare_ticket_saves_local_draft` | The draft is not saved, has wrong fields, loses user/thread ids or changes the user's steps |
+| `test_prepare_ticket_refuses_missing_details` | A ticket is created from missing information (S09 rule) |
+| `test_model_cannot_see_program_settings` | The profile, user or thread becomes a model-visible argument |
+| `test_tool_request_is_executed_and_result_returned` | Tools are not executed, results do not return to the model, or chaining stops |
+| `test_outage_profile_reaches_tool` | The snapshot is not passed from the program to the tool through `config` |
+| `test_loop_limit_stops_endless_tool_requests` | The loop limit is missing, so a model that keeps requesting tools never stops |
+| `test_plain_answer_ends_without_tools` | A text answer is routed to `tools` instead of `END` |
+| `test_conversation_survives_new_graph_instance` | The checkpointer does not save or reload a thread |
+| `test_memory_survives_process_restart` | Memory exists only in RAM; this test runs `chat.py` twice as separate processes |
+| `test_new_thread_has_preference_but_not_old_messages` | A new thread reuses old messages, or the preference is not shared across threads |
+| `test_users_are_separated` | One user's preference or conversation leaks to another user |
+
+**Fake models.** Two clearly labelled fakes are used, only in tests: `ScriptedModel` in `test_agent_loop.py` returns a prepared list of tool requests to test the loop mechanics exactly, and `FakeHelpdeskModel` in `fake_model.py` follows keyword rules and prefixes every reply with `[FAKE MODEL]`, so the memory tests can run end to end. Every run reported in Parts 2 and 3 used the real model `openai/gpt-4o-mini`.
 
 ## Choices and limitations
 
-TODO: explain the storage and libraries I chose, why they fit this task, and what still does not work reliably.
+**Libraries.** LangGraph builds the graphs and provides checkpointing. `langchain-openai` is used as the model adapter because OpenRouter exposes an OpenAI-compatible API, so only `OPENAI_BASE_URL` had to change. `python-dotenv` keeps the key in an ignored `.env` file. `pytest` and GitHub Actions run the tests.
+
+**Model.** `openai/gpt-4o-mini` through OpenRouter, temperature 0: it supports tool calling, is inexpensive for repeated scenario runs, and writes Kazakh adequately for the preference demonstrations.
+
+**Conversation storage.** `SqliteSaver` from `langgraph-checkpoint-sqlite` is LangGraph's own checkpointer, so saving and reloading a thread requires no custom code. SQLite is a single local file with no server, which survives restarts and is easy to delete. `InMemorySaver` is used only in `run_part2.py`, where persistence is not part of the task.
+
+**User memory storage.** A JSON file keyed by `user_id`. The only preference in this task is the reply language, so a readable file is easier to inspect and to reset than a second database. It is written only by `save_language_preference` and read only by `load_user_memory`, both of which take `user_id` from the program's config.
+
+**Separate runners.** Each part has its own runner so that the Part 1 graph stays model-free and the Part 2 logs are not affected by memory. `run_part3.py` starts a new Python process for every part of a scenario after `restart_process`, which makes the restart real rather than a second call in the same process.
+
+**What does not work reliably.**
+
+- Model behaviour depends on the prompt and is not guaranteed by code. S14 needed two prompt corrections, and the model ignored the rule to call `find_instructions` during an outage. In D01 it prepared a ticket without being asked.
+- Wording varies between runs even at temperature 0, so the logs show one observed run, not a fixed result. The tests check mechanisms with fake models instead of real model text.
+- The whole conversation is sent to the model on every turn. Long threads would increase cost and could exceed the context window; a production version would need trimming or summarisation.
+- The user memory JSON file is rewritten on every save and has no locking, so two processes saving at the same moment could overwrite each other. This is acceptable for a single-user demo but not for a shared service.
+- Language preference detection relies on the model calling `save_language_preference`; the preference is not extracted by code.
+
+## AI-use declaration
+
+I used Claude (Anthropic) as an assistant to explain LangGraph concepts, to draft the code structure, tests and documentation, and to review my scenario outputs. I ran every scenario myself with my own OpenRouter key, checked the logs, and identified and corrected the S14 behaviour from my own runs.
 
 ## Supplied scenarios — my actual results
 

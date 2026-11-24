@@ -1,6 +1,3 @@
-#Part 2: the three helpdesk tools
-
-
 import json
 import os
 import uuid
@@ -23,18 +20,18 @@ STATUS_PROFILES = load_json("service_status.json")["profiles"]
 TICKET_TEMPLATE = load_json("ticket_template.json")["ticket"]
 
 
+# Folder for ticket drafts, can be changed with HELPDESK_TICKET_DIR
 def ticket_dir() -> Path:
-    """Where ticket drafts are saved (can be changed with HELPDESK_TICKET_DIR)."""
     return Path(os.getenv("HELPDESK_TICKET_DIR", ROOT / "outputs" / "tickets"))
 
 
+# Reads a value that the program put into config["configurable"]
 def setting(config, key: str, default=None):
-    """Read a value our program put into config["configurable"]."""
     return ((config or {}).get("configurable") or {}).get(key, default)
 
 
+# Normalises a topic name: Wi-Fi -> wifi, PASSWORD -> password, anything else -> None
 def to_topic(word: str):
-    """'Wi-Fi' -> 'wifi', 'PASSWORD' -> 'password', anything else -> None."""
     word = word.lower().strip()
     for topic, aliases in HELPDESK["topic_aliases"].items():
         if word == topic or word in aliases:
@@ -42,10 +39,9 @@ def to_topic(word: str):
     return None
 
 
-# Tool 1 
-@tool
+# Tool 1: instructions from data/helpdesk.json
+@tool(description="Look up the local helpdesk instructions. topic must be 'wifi' or 'password'.")
 def find_instructions(topic: str) -> dict:
-    """Look up the local helpdesk instructions. topic must be 'wifi' or 'password'."""
     key = to_topic(topic)
     if key is None:
         return {"error": f"No instructions for '{topic}'.",
@@ -55,11 +51,10 @@ def find_instructions(topic: str) -> dict:
             "title": guide["title"], "steps": guide["steps"]}
 
 
-# Tool 2 
-@tool
+# Tool 2: service status from the snapshot selected by the program
+@tool(description="Check whether a service is operating. service must be 'wifi' or "
+                  "'account_recovery' (password problems use 'account_recovery').")
 def check_service_status(service: str, config: RunnableConfig) -> dict:
-    """Check whether a service is operating. service must be 'wifi' or 'account_recovery'
-    (password problems use 'account_recovery')."""
     profile = setting(config, "status_profile", "normal")
     topic = to_topic(service)
     name = HELPDESK["topic_services"][topic] if topic else service.lower().strip()
@@ -71,14 +66,13 @@ def check_service_status(service: str, config: RunnableConfig) -> dict:
             "message": entry["message"], "status_profile": profile}
 
 
-# Tool 3 
-@tool
+# Tool 3: a local ticket draft saved as JSON, nothing is sent
+@tool(description="Save a LOCAL ticket draft (nothing is sent). "
+                  "category: 'wifi' or 'password'. summary: the problem in the user's words. "
+                  "steps_tried: only steps the user said they tried. "
+                  "service_status: 'operational', 'outage', 'unknown' or 'not checked'.")
 def prepare_ticket(category: str, summary: str, steps_tried: list[str],
                    service_status: str, config: RunnableConfig) -> dict:
-    """Save a LOCAL ticket draft (nothing is sent).
-    category: 'wifi' or 'password'. summary: the problem in the user's words.
-    steps_tried: only steps the user said they tried.
-    service_status: 'operational', 'outage', 'unknown' or 'not checked'."""
     topic = to_topic(category)
     missing = []
     if topic is None:
@@ -88,7 +82,7 @@ def prepare_ticket(category: str, summary: str, steps_tried: list[str],
     if not [s for s in steps_tried if s.strip()]:
         missing.append("steps already tried")
     if missing:
-        # Do not invent details: tell the model to ask the user instead.
+        # Missing details are not invented: the model is told to ask the user
         return {"error": "Ticket not prepared: missing information.", "missing": missing,
                 "next": "Ask the user for the missing information."}
 
@@ -108,8 +102,9 @@ def prepare_ticket(category: str, summary: str, steps_tried: list[str],
     folder.mkdir(parents=True, exist_ok=True)
     path = folder / f"{ticket['ticket_id']}.json"
     path.write_text(json.dumps(ticket, indent=2, ensure_ascii=False), encoding="utf-8")
-    return {"ticket_file": path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path),
-            "ticket": ticket, "note": "Local draft only. Nothing was sent."}
+    shown_path = path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path)
+    return {"ticket_file": shown_path, "ticket": ticket,
+            "note": "Local draft only. Nothing was sent."}
 
 
 TOOLS = [find_instructions, check_service_status, prepare_ticket]
