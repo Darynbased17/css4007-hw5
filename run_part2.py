@@ -11,12 +11,12 @@ from helpdesk_tools import check_service_status, find_instructions, prepare_tick
 ROOT = Path(__file__).parent
 OUT = ROOT / "outputs"
 OUT.mkdir(exist_ok=True)
-SCENARIOS = {s["id"]: s for s in json.loads((ROOT / "data/scenarios.json").read_text())["scenarios"]}
+SCENARIOS = {s["id"]: s for s in json.loads((ROOT / "data/scenarios.json").read_text(encoding="utf-8"))["scenarios"]}
 PART2_IDS = ["S06", "S07", "S08", "S09", "S14"]
 
 
+# Calls each tool on its own, without the agent
 def direct_tool_calls():
-    """Each tool works on its own, without the agent."""
     cfg = {"configurable": {"user_id": "demo-user-a", "thread_id": "direct-demo"}}
     calls = [
         ("find_instructions", {"topic": "wifi"}, None),
@@ -39,10 +39,11 @@ def direct_tool_calls():
         result = tools[name].invoke(args, config=config)
         log.append({"tool": name, "args": args, "status_profile": profile, "result": result})
         print(f"{name}({args}) [{profile}]\n  -> {json.dumps(result, ensure_ascii=False)[:160]}")
-    (OUT / "part2_direct_tool_calls.json").write_text(json.dumps(log, indent=2, ensure_ascii=False))
+    (OUT / "part2_direct_tool_calls.json").write_text(json.dumps(log, indent=2, ensure_ascii=False), encoding="utf-8")
     print("\nSaved outputs/part2_direct_tool_calls.json")
 
 
+# Runs every event of one scenario in the same graph and saves the log
 def run_scenario(scenario_id: str, graph):
     sc = SCENARIOS[scenario_id]
     turns = []
@@ -74,7 +75,7 @@ def run_scenario(scenario_id: str, graph):
                         "(check_service_status), conversation state (earlier messages in this thread)",
         "turns": turns,
     }
-    (OUT / f"{scenario_id}_part2.json").write_text(json.dumps(log, indent=2, ensure_ascii=False))
+    (OUT / f"{scenario_id}_part2.json").write_text(json.dumps(log, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"-> saved outputs/{scenario_id}_part2.json")
 
 
@@ -85,5 +86,5 @@ if __name__ == "__main__":
     else:
         model = make_model()
         for sid in (PART2_IDS if what == "all" else [what.upper()]):
-            # a fresh in-memory checkpointer per scenario = "reset_before: true"
+            # a fresh in-memory checkpointer per scenario implements reset_before: true
             run_scenario(sid, build_agent_graph(model, checkpointer=InMemorySaver()))

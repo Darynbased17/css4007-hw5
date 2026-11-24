@@ -1,0 +1,18 @@
+{
+  "ticket_id": "DRAFT-20261124-100756-3e2c",
+  "status": "draft",
+  "user_id": "demo-user-a",
+  "thread_id": "that-demo",
+  "category": "wifi",
+  "summary": "Cannot connect to Wi-Fi after trying all recommended steps.",
+  "steps_tried": [
+    "Checked that Wi-Fi is enabled and airplane mode is off.",
+    "Selected the fictional Campus-Demo network.",
+    "Forgot the saved network and tried connecting again."
+  ],
+  "service_status": "operational",
+  "status_profile": "normal",
+  "reference_ids": [
+    "GUIDE-WIFI"
+  ]
+}

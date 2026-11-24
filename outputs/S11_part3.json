@@ -1,0 +1,179 @@
+{
+  "scenario": "S11",
+  "title": "Persist and recall after restart",
+  "command": "python run_part3.py S11",
+  "model": "openai/gpt-4o-mini",
+  "status_profile": "normal",
+  "reset_before": true,
+  "restarts": 1,
+  "storage": {
+    "conversation_memory": "local-storage/conversations.sqlite",
+    "user_memory": "local-storage/user_memory.json"
+  },
+  "loop_limit": 5,
+  "processes": [
+    {
+      "process_id": 14316,
+      "turns": [
+        {
+          "user_id": "demo-user-a",
+          "thread_id": "restart-a",
+          "user_message": "Please remember that I prefer replies in Kazakh. My issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails.",
+          "memory_read": {
+            "conversation_memory": {
+              "thread_id": "restart-a",
+              "messages_before_this_turn": 0,
+              "earlier_user_messages": []
+            },
+            "user_memory": {},
+            "reference_file": "data/helpdesk.json via find_instructions"
+          },
+          "nodes_visited": [
+            "load_user_memory",
+            "agent",
+            "tools",
+            "agent",
+            "tools",
+            "agent"
+          ],
+          "steps": [
+            {
+              "node": "load_user_memory",
+              "user_memory_loaded": {}
+            },
+            {
+              "node": "agent",
+              "model_tool_requests": [
+                {
+                  "tool": "save_language_preference",
+                  "args": {
+                    "language": "Kazakh"
+                  }
+                },
+                {
+                  "tool": "check_service_status",
+                  "args": {
+                    "service": "wifi"
+                  }
+                }
+              ]
+            },
+            {
+              "node": "tools",
+              "tool_results": [
+                {
+                  "tool": "save_language_preference",
+                  "result": {
+                    "saved": true,
+                    "user_id": "demo-user-a",
+                    "language": "Kazakh",
+                    "storage": "user memory (local-storage/user_memory.json)"
+                  }
+                },
+                {
+                  "tool": "check_service_status",
+                  "result": {
+                    "service": "wifi",
+                    "status": "operational",
+                    "message": "The demo Wi-Fi service has no reported outage.",
+                    "status_profile": "normal"
+                  }
+                }
+              ],
+              "state_change": {
+                "tool_rounds": 1
+              },
+              "user_memory_loaded": {
+                "language": "Kazakh"
+              }
+            },
+            {
+              "node": "agent",
+              "model_tool_requests": [
+                {
+                  "tool": "find_instructions",
+                  "args": {
+                    "topic": "wifi"
+                  }
+                }
+              ]
+            },
+            {
+              "node": "tools",
+              "tool_results": [
+                {
+                  "tool": "find_instructions",
+                  "result": {
+                    "topic": "wifi",
+                    "instruction_id": "GUIDE-WIFI",
+                    "title": "Connect to the practice campus network",
+                    "steps": [
+                      "Check that Wi-Fi is enabled and airplane mode is off.",
+                      "Select the fictional Campus-Demo network.",
+                      "If connection fails, forget the saved network and try connecting again.",
+                      "If the problem remains, check the service status before preparing a ticket."
+                    ]
+                  }
+                }
+              ],
+              "state_change": {
+                "tool_rounds": 2
+              }
+            },
+            {
+              "node": "agent",
+              "model_answer": "Сіздердің жауаптарыңызды қазақ тілінде есте сақтадым. Wi-Fi қызметі жұмыс істеп тұр. \n\nСіз Wi-Fi-ды қосып, қайта қосылуға тырыстыңыз, бірақ ол әлі де сәтсіз. Мына қадамдарды орындап көріңіз:\n\n1. Wi-Fi қосылғанына және ұшақ режимінің өшірілгеніне көз жеткізіңіз.\n2. \"Campus-Demo\" желісін таңдаңыз.\n3. Егер қосылу сәтсіз болса, сақталған желіні ұмытуды және қайта қосылуды байқап көріңіз.\n4. Егер мәселе шешілмесе, қызметтің күйін тексеріңіз.\n\nЕгер мәселе шешілмесе, мен сіз үшін жергілікті билет жобасын дайындай аламын. Сіз не істедіңіз?"
+            }
+          ],
+          "final_reply": "Сіздердің жауаптарыңызды қазақ тілінде есте сақтадым. Wi-Fi қызметі жұмыс істеп тұр. \n\nСіз Wi-Fi-ды қосып, қайта қосылуға тырыстыңыз, бірақ ол әлі де сәтсіз. Мына қадамдарды орындап көріңіз:\n\n1. Wi-Fi қосылғанына және ұшақ режимінің өшірілгеніне көз жеткізіңіз.\n2. \"Campus-Demo\" желісін таңдаңыз.\n3. Егер қосылу сәтсіз болса, сақталған желіні ұмытуды және қайта қосылуды байқап көріңіз.\n4. Егер мәселе шешілмесе, қызметтің күйін тексеріңіз.\n\nЕгер мәселе шешілмесе, мен сіз үшін жергілікті билет жобасын дайындай аламын. Сіз не істедіңіз?",
+          "ticket_files": [],
+          "loop_limit_reached": false,
+          "messages_in_thread": 7
+        }
+      ]
+    },
+    {
+      "process_id": 8712,
+      "turns": [
+        {
+          "user_id": "demo-user-a",
+          "thread_id": "restart-a",
+          "user_message": "Which problem and steps did we discuss?",
+          "memory_read": {
+            "conversation_memory": {
+              "thread_id": "restart-a",
+              "messages_before_this_turn": 7,
+              "earlier_user_messages": [
+                "Please remember that I prefer replies in Kazakh. My issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails."
+              ]
+            },
+            "user_memory": {
+              "language": "Kazakh"
+            },
+            "reference_file": "not read"
+          },
+          "nodes_visited": [
+            "load_user_memory",
+            "agent"
+          ],
+          "steps": [
+            {
+              "node": "load_user_memory",
+              "user_memory_loaded": {
+                "language": "Kazakh"
+              }
+            },
+            {
+              "node": "agent",
+              "model_answer": "Біз Wi-Fi мәселесін талқыладық. Сіз Wi-Fi-ды қосып, қайта қосылуға тырыстыңыз, бірақ ол сәтсіз болды. Сіз тек Wi-Fi-ды қосып, қайта қосылуға тырыстыңыз."
+            }
+          ],
+          "final_reply": "Біз Wi-Fi мәселесін талқыладық. Сіз Wi-Fi-ды қосып, қайта қосылуға тырыстыңыз, бірақ ол сәтсіз болды. Сіз тек Wi-Fi-ды қосып, қайта қосылуға тырыстыңыз.",
+          "ticket_files": [],
+          "loop_limit_reached": false,
+          "messages_in_thread": 9
+        }
+      ]
+    }
+  ]
+}
